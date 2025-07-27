@@ -1,6 +1,6 @@
 from pathlib import Path
 from faster_whisper import WhisperModel
-from transcriber.whisper_wrapper import WhisperTranscriber
+from transcriber.transcriber import Transcriber
 
 class WhisperTranscriber(Transcriber):
     def __init__(self, model_size: str = "base", compute_type: str = "float32"):

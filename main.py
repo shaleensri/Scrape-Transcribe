@@ -3,14 +3,16 @@
 
 from fetcher.senate_scraper import SenateScraper
 from transcriber.whisper_transcriber import WhisperTranscriber
-from storage.file_manager import download_senate_video_ffmpeg
+from storage.file_manager import download_senate_video_ffmpeg, upload_file_to_gcs
+
 
 from pathlib import Path
+BUCKET_NAME = "legislature-videos-shaleen"
 
 def main():
     # Step 1: Scrape all Senate videos
     scraper = SenateScraper()
-    videos = scraper.scrape(batch_size=50)
+    videos = scraper.scrape(batch_size=30, max_pages=1)
 
     print(f" Found {len(videos)} Senate videos.\n")
 
@@ -22,17 +24,36 @@ def main():
     target_video = videos[0]  # You can change this to index or filter logic
     video_id = target_video["video_id"]
     output_dir = Path("downloads/senate")
+    filename = target_video["title"]  # e.g., "Senate Session 25-07-17"
+    recording_date = target_video["recording_date"]  # already formatted as YYYY-MM-DD
+    committee = filename.rsplit(" ", 1)[0].strip()  #  committee (everything before the last space-date pattern)
+    cloud_dir = f"senate/{committee}/{recording_date}"
 
     # Step 4: Download video using ffmpeg
     local_path = download_senate_video_ffmpeg(video_id, output_dir)
+    print(f"\n Video downloaded to: {local_path}")
 
     # Step 5: Transcribe
     transcriber = WhisperTranscriber()
-    transcript = transcriber.transcribe(local_path)
+    transcript_path = transcriber.transcribe(local_path)
 
     # Step 6: Show transcript preview
-    print("\n📝 Transcript Preview:\n")
-    print(transcript[:1000] + "..." if len(transcript) > 1000 else transcript)
+    print("\n Transcript Preview:\n")
+    preview = Path(transcript_path).read_text()
+    print(preview[:1000] + "..." if len(preview) > 1000 else preview)
+
+    upload_file_to_gcs(
+    bucket_name=BUCKET_NAME,
+    local_path=local_path,
+    blob_path=f"{cloud_dir}/{local_path.name}"
+    )
+
+    upload_file_to_gcs(
+        bucket_name=BUCKET_NAME,
+        local_path=transcript_path,
+        blob_path=f"{cloud_dir}/{transcript_path.name}"
+    )
+
 
 
 if __name__ == "__main__":

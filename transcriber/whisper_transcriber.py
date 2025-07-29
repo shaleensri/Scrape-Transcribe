@@ -18,9 +18,14 @@ class WhisperTranscriber(Transcriber):
     def transcribe(self, video_path: Path) -> str:
         segments, _ = self.model.transcribe(str(video_path))
 
-        transcript = ""
-        for segment in segments:
-            print(f"[{segment.start:.2f} - {segment.end:.2f}] {segment.text.strip()}")
-            transcript += f"{segment.text.strip()} "
+        transcript_path = video_path.with_suffix(".txt")
+        with open(transcript_path, "w") as f:
+            for segment in segments:
+                start = f"{segment.start:.2f}"
+                end = f"{segment.end:.2f}"
+                text = segment.text.strip()
 
-        return transcript.strip()
+                print(f"[{start} - {end}] {text}")  # logs to console
+                f.write(f"{text} ")
+
+        return transcript_path

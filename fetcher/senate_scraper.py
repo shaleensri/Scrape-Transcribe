@@ -11,10 +11,10 @@ class SenateScraper(BaseScraper):
         self.api_payload = {
             "_id": "61b3adc8124d7d000891ca5c",
             "page": 1,
-            "results": 50
+            "results": 30
         }
 
-    def fetch_data(self, page=1, results=100):
+    def fetch_data(self, page=1, results=30):
         payload = {
             "_id": "61b3adc8124d7d000891ca5c",
             "page": page,
@@ -42,7 +42,7 @@ class SenateScraper(BaseScraper):
                 pass
         return "Unknown"
     
-    def scrape(self, batch_size=100):
+    def scrape(self, max_pages, batch_size=30 ):
         all_results = []
         page = 1
 
@@ -88,8 +88,11 @@ class SenateScraper(BaseScraper):
                     "recording_date": recording_date,
                     "upload_date": upload_date
                 })
-
+            if page >= max_pages:
+                print(" Reached max page limit for test.")
+                break
             page += 1
+
 
         return all_results
 """

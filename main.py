@@ -3,24 +3,93 @@
 
 from fetcher.senate_scraper import SenateScraper
 from transcriber.whisper_transcriber import WhisperTranscriber
-from storage.file_manager import download_senate_video_ffmpeg, upload_file_to_gcs
+from storage.state_tracker import is_processed, mark_processed
+from storage.file_manager import download_house_video, download_senate_video_ffmpeg, upload_file_to_gcs
+from fetcher.house_scraper_static import HouseScraperStatic
+from urllib.parse import urlparse, parse_qs
 
 
 from pathlib import Path
 BUCKET_NAME = "legislature-videos-shaleen"
 
+def get_filename_from_url(url):
+    query = parse_qs(urlparse(url).query)
+    return query.get("video", ["video.mp4"])[0]
+
 def main():
     # Step 1: Scrape all Senate videos
-    scraper = SenateScraper()
-    videos = scraper.scrape(batch_size=30, max_pages=1)
+    house_scraper = HouseScraperStatic()
+    house_videos = house_scraper.scrape()
+    #senate_scraper = SenateScraper()
+    #videos = senate_scraper.scrape(batch_size=30, max_pages=1)
 
-    print(f" Found {len(videos)} Senate videos.\n")
+    print(f" Found {len(house_videos)} House videos.\n")
+    #print(f" Found {len(videos)} Senate videos.\n")
+
+    for idx, video in enumerate(house_videos[:5], start=1):
+        print(f"{idx}. {video['committee']} | Date: {video['date']} | URL: {video['url']}")
+    
+    target_video = house_videos[0]
+    filename = get_filename_from_url(target_video["url"])
+    committee = target_video["committee"]
+    recording_date = target_video["date"] 
+    # Might need to normalize format to YYYY-MM-DD
+    cloud_dir = f"house/{committee}/{recording_date}"
+    
+    if is_processed("house", committee, recording_date, filename):
+        print(f"[Skip] Already processed: {committee} | {recording_date} | {filename}")
+        return
+    
+    output_dir = Path("downloads/house")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    local_path = output_dir / filename
+
+    video_id = get_filename_from_url(target_video["url"])
+    real_url = f"https://www.house.mi.gov/ArchiveVideoFiles/{video_id}"
+
+    print(f"\n Downloading from {real_url}")
+    download_house_video(real_url, local_path)
+    print(" Download complete.")
+
+    print("\n Transcribing...")
+    transcriber = WhisperTranscriber()
+    transcript_path = transcriber.transcribe(local_path)
+
+    # Step 6: Show transcript preview
+    print("\n Transcript Preview:\n")
+    preview = Path(transcript_path).read_text()
+    print(preview[:1000] + "..." if len(preview) > 1000 else preview)
+
+    
+    upload_file_to_gcs(
+        bucket_name=BUCKET_NAME,
+        local_path=local_path,
+        blob_path=f"{cloud_dir}/{local_path.name}"
+    )
+
+    upload_file_to_gcs(
+        bucket_name=BUCKET_NAME,
+        local_path=transcript_path,
+        blob_path=f"{cloud_dir}/{transcript_path.name}"
+    )
+
+    mark_processed("house", committee, recording_date, local_path.name)
+
+    # Delete local files after upload
+    try:
+        local_path.unlink()
+        transcript_path.unlink()
+        print(f"[Cleanup] Deleted local files: {local_path.name}, {transcript_path.name}")
+    except Exception as e:
+        print(f"[Warning] Could not delete files: {e}")
+
 
     # Step 2: Print sample list
-    for idx, video in enumerate(videos[:5], start=1):
-        print(f"{idx}. {video['title']} | Uploaded: {video['upload_date']} | ID: {video['video_id']}")
+    #for idx, video in enumerate(videos[:5], start=1):
+        #print(f"{idx}. {video['title']} | Uploaded: {video['upload_date']} | ID: {video['video_id']}")
 
     # Step 3: Select one video to download and transcribe
+    """
     target_video = videos[0]  # You can change this to index or filter logic
     video_id = target_video["video_id"]
     output_dir = Path("downloads/senate")
@@ -53,9 +122,7 @@ def main():
         local_path=transcript_path,
         blob_path=f"{cloud_dir}/{transcript_path.name}"
     )
-
-
-
+    """
 if __name__ == "__main__":
     main()
 

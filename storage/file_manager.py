@@ -12,7 +12,7 @@ def upload_file_to_gcs(bucket_name: str, local_path: Path, blob_path: str):
     blob.upload_from_filename(str(local_path))
     print(f"[Uploaded] {local_path.name} → gs://{bucket_name}/{blob_path}")
 
-def download_file(url, destination):
+def download_house_video(url, destination):
     response = requests.get(url, stream=True)
     response.raise_for_status()
     

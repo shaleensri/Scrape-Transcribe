@@ -11,7 +11,8 @@ class WhisperTranscriber(Transcriber):
         compute_type: "int8", "int8_float16", "float16", "float32", "auto"
 
         i went with "base" as the best trade-off for speed and accuraccy. 
-        might mess with background noise and heavy accents: dont think that'll be a problem for michigan lol
+        might mess with background noise and heavy accents: 
+        dont think that'll be a problem for michigan lol
         """
         self.model = WhisperModel(model_size, compute_type=compute_type)
 

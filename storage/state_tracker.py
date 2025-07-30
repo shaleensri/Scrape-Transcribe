@@ -21,6 +21,7 @@ def save_state(state: Dict[str, Any]):
 
 def is_processed(chamber: str, committee: str, recording_date: str, filename: str) -> bool:
     """Check if a file is already processed."""
+    # can check with only filename since it is unique.
     state = load_state()
     for entry in state.get(chamber, []):
         if (entry["committee"] == committee and
@@ -32,6 +33,7 @@ def is_processed(chamber: str, committee: str, recording_date: str, filename: st
 
 def mark_processed(chamber: str, committee: str, recording_date: str, filename: str):
     """Mark a file as processed in the state."""
+    # can check with only filename since it is unique.
     state = load_state()
     if chamber not in state:
         state[chamber] = []

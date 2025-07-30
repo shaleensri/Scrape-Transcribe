@@ -6,5 +6,11 @@
       "filename": "HAGRI-022025.mp4"
     }
   ],
-  "senate": []
+  "senate": [
+    {
+      "committee": "Senate Session",
+      "recording_date": "2025-07-29",
+      "filename": "Senate Session 25-07-29"
+    }
+  ]
 }

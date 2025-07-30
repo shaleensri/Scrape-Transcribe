@@ -1,4 +1,5 @@
 from pathlib import Path
+import threading
 from urllib.parse import urlparse, parse_qs
 
 from fetcher.house_scraper_static import HouseScraperStatic
@@ -31,14 +32,14 @@ def process_video(chamber, committee, recording_date, filename, download_args):
     # Download based on chamber
     if chamber == "house":
         real_url = download_args["real_url"]
-        print(f"\nDownloading from {real_url}")
+        print(f"\nHouse: Downloading from {real_url}")
         download_house_video(real_url, local_path)
     elif chamber == "senate":
         video_id = download_args["video_id"]
-        print(f"\nDownloading Senate video ID: {video_id}")
+        print(f"\nSenate: Downloading video ID: {video_id}")
         local_path = download_senate_video_ffmpeg(video_id, output_dir)
 
-    print("Download complete.")
+    print(f"{chamber.capitalize()}: Download complete.")
 
     # Transcribe
     print("\nTranscribing...")
@@ -67,6 +68,7 @@ def process_video(chamber, committee, recording_date, filename, download_args):
         print(f"[Warning] Could not delete files: {e}")
 
 def run_house():
+    print("Scraping House videos...")
     house_scraper = HouseScraperStatic()
     house_videos = house_scraper.scrape()
     print(f"Found {len(house_videos)} House videos.\n")
@@ -75,7 +77,7 @@ def run_house():
         print(f"{idx}. {video['committee']} | Date: {video['date']} | URL: {video['url']}")
 
     # Demo: first video
-    target_video = house_videos[1]
+    target_video = house_videos[3]
     filename = get_filename_from_url(target_video["url"])
     committee = target_video["committee"]
     recording_date = target_video["date"]
@@ -90,6 +92,7 @@ def run_house():
     )
 
 def run_senate():
+    print("Scraping Senate videos...")
     scraper = SenateScraper()
     videos = scraper.scrape(batch_size=30, max_pages=1)
     print(f"Found {len(videos)} Senate videos.\n")
@@ -98,7 +101,7 @@ def run_senate():
         print(f"{idx}. {video['title']} | Uploaded: {video['upload_date']} | ID: {video['video_id']}")
 
     # Demo: first video
-    target_video = videos[1]
+    target_video = videos[3]
     filename = target_video["title"]
     committee = filename.rsplit(" ", 1)[0].strip()
     recording_date = target_video["recording_date"]
@@ -113,5 +116,9 @@ def run_senate():
 
 if __name__ == "__main__":
     # Choose which to run
-    run_house()
-    run_senate()
+    house_thread = threading.Thread(target=run_house)
+    senate_thread = threading.Thread(target=run_senate)
+    house_thread.start()
+    senate_thread.start()
+    house_thread.join()
+    senate_thread.join()

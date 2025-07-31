@@ -1,16 +1,16 @@
+import threading
 import schedule
 import time
 from pathlib import Path
 from main import run_house, run_senate  
 
 # ===== CONFIGURATION =====
-HOUSE_FREQ_MINUTES = 5    # How often to run House job
-SENATE_FREQ_MINUTES = 5   # How often to run Senate job
+FREQ_MINUTES = 5   # How often to run both jobs
 VIDEO_LIMIT = 2           # Max number of videos to process per run
 LOCK_FILE = Path("scheduler.lock")
 # =========================
 
-def job_wrapper(job_func, *args):
+def job_wrapper():
     """Wraps the job to prevent overlapping runs."""
     if LOCK_FILE.exists():
         print("Previous run still in progress... waiting...")
@@ -18,32 +18,29 @@ def job_wrapper(job_func, *args):
 
     try:
         LOCK_FILE.touch()
-        job_func(*args)
+
+        house_thread = threading.Thread(target=run_house, args=(VIDEO_LIMIT,))
+        senate_thread = threading.Thread(target=run_senate, args=(VIDEO_LIMIT,))
+
+        house_thread.start()
+        senate_thread.start()
+
+        house_thread.join()
+        senate_thread.join()
+
     finally:
         if LOCK_FILE.exists():
             LOCK_FILE.unlink()
 
-def job_house():
-    print("\n Starting House job...")
-    job_wrapper(run_house, VIDEO_LIMIT)
-
-def job_senate():
-    print("\n Starting Senate job...")
-    job_wrapper(run_senate, VIDEO_LIMIT)
-
 if __name__ == "__main__":
     # Schedule both jobs
     print("Starting Jobs...")
-    # Initial run
+    schedule.every(FREQ_MINUTES).minutes.do(job_wrapper)
 
-    schedule.every(HOUSE_FREQ_MINUTES).minutes.do(job_house)
-    schedule.every(SENATE_FREQ_MINUTES).minutes.do(job_senate)
-
-    print(f"Scheduler started: House every {HOUSE_FREQ_MINUTES} min, Senate every {SENATE_FREQ_MINUTES} min.")
+    print(f"Scheduler started: Running both chambers every {FREQ_MINUTES} minutes.")
     print(f"Processing up to {VIDEO_LIMIT} videos per run.\nPress Ctrl+C to stop.\n")
 
-    job_house()
-    job_senate()
+    job_wrapper()  # First Run
 
     try:
         while True:

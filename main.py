@@ -13,6 +13,8 @@ from storage.video_processor import process_video
 from transcriber.whisper_transcriber import WhisperTranscriber
 
 BUCKET_NAME = "legislature-videos-shaleen"
+SENATE_BATCH_SIZE = 30 # Tried larger, but received errors
+SENATE_MAX_PAGES = 2 # Limit for testing/ Demo
 
 def get_filename_from_url(url):
     query = parse_qs(urlparse(url).query)
@@ -39,7 +41,7 @@ def run_house(limit=None):
             filename=filename,
             download_args={"real_url": real_url}
         )
-        #print(f"house processed_count: {processed_count} | {filename}")
+
         if limit and processed_count >= limit:
             break
 
@@ -48,7 +50,7 @@ def run_house(limit=None):
 def run_senate(limit=None):
     print("Scraping Senate videos...")
     scraper = SenateScraper()
-    videos = scraper.scrape(batch_size=30, max_pages=1)
+    videos = scraper.scrape(batch_size=SENATE_BATCH_SIZE, max_pages=SENATE_MAX_PAGES)
     print(f"Found {len(videos)} Senate videos.\n")
 
     processed_count = 0
@@ -67,12 +69,12 @@ def run_senate(limit=None):
             filename=filename,
             download_args={"video_id": video["video_id"]}
         )
-        #print(f"senate processed_count: {processed_count} | {filename}")
+
         if limit and processed_count >= limit:
             break
 
 if __name__ == "__main__":
-    # Choose which to run
+    """ In case i dont want to run the scheduler, I can run this script directly."""
     house_thread = threading.Thread(target=run_house, args=(2,))
     senate_thread = threading.Thread(target=run_senate, args=(2,))
     house_thread.start()

@@ -6,9 +6,17 @@ from storage.state_tracker import is_processed, mark_processed
 BUCKET_NAME = "legislature-videos-shaleen"
 
 def process_video(chamber, committee, recording_date, filename, download_args):
-    """Generic video processing: download, transcribe, store locally (no cloud)."""
+    """Generic video processing: download, transcribe and upload to cloud
+    @param chamber: house/senate
+    @param committee: Committee name
+    @param recording_date: Date of the recording
+    @param filename: Name of the video file
+    @param download_args: real_url or video_id based on chamber
+    """
+
     if is_processed(chamber, committee, recording_date, filename):
-        print(f"[Skip] Already processed: {committee} | {recording_date} | {filename}")
+        print(f"[{chamber.capitalize()}]\
+              [Skip] Already processed: {committee} | {recording_date} | {filename}")
         return
 
     output_dir = Path(f"downloads/{chamber}")
@@ -28,22 +36,18 @@ def process_video(chamber, committee, recording_date, filename, download_args):
     print(f"{chamber.capitalize()}: Download complete.")
 
     # Transcribe
-    print(f"\n{chamber.capitalize()}: Transcribing...")
+    print(f"\n{chamber.capitalize()}: transcribing...")
     transcriber = WhisperTranscriber()
     transcript_path = transcriber.transcribe_test(local_path)
-
-    # Show transcript preview
-    preview = Path(transcript_path).read_text()
-    print("\nTranscript Preview:\n")
-    print(preview[:1000] + "..." if len(preview) > 1000 else preview)
-    print(f"\n{chamber.capitalize()}: Transcription complete.")
+    print(f"\n{chamber.capitalize()}: Transcript Done:\n")
 
     # Upload
     print(f"\nUploading {chamber} video and transcript to GCS...")
     cloud_dir = f"{chamber}/{committee}/{recording_date}"
-    #upload_file_to_gcs(BUCKET_NAME, local_path, f"{cloud_dir}/{local_path.name}")
-    #upload_file_to_gcs(BUCKET_NAME, transcript_path, f"{cloud_dir}/{transcript_path.name}")
+    upload_file_to_gcs(BUCKET_NAME, local_path, f"{cloud_dir}/{local_path.name}")
+    upload_file_to_gcs(BUCKET_NAME, transcript_path, f"{cloud_dir}/{transcript_path.name}")
     print(f"{chamber.capitalize()}: Upload complete.")
+
     # Mark as processed
     mark_processed(chamber, committee, recording_date, filename)
 
@@ -51,9 +55,9 @@ def process_video(chamber, committee, recording_date, filename, download_args):
     try:
         local_path.unlink()
         transcript_path.unlink()
-        print(f"[Cleanup] Deleted local files: {local_path.name}, {transcript_path.name}")
+        print(f"[{chamber.capitalize()}][Cleanup] Deleted local files: {local_path.name}, {transcript_path.name}")
     except Exception as e:
-        print(f"[Warning] Could not delete files: {e}")
+        print(f"[{chamber.capitalize()}][Warning] Could not delete files: {e}")
 
 
 
@@ -61,7 +65,7 @@ def process_video(chamber, committee, recording_date, filename, download_args):
  ======================= No Cloud Upload Approach =======================
  - Tried this approach to avoid using cloud storage but eventually reverted to cloud upload.
  - Can discuss during interview about its pros/cons.
-
+ - Commented out on purpose
 
 def process_video(chamber, committee, recording_date, filename, download_args):
     

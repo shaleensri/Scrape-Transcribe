@@ -26,7 +26,7 @@ class WhisperTranscriber(Transcriber):
                 end = f"{segment.end:.2f}"
                 text = segment.text.strip()
 
-                print(f"[{start} - {end}] {text}")  # logs to console
-                f.write(f"{text} ")
+                # Write in [start - end] format into file
+                f.write(f"[{start} - {end}] {text}\n")
 
         return transcript_path

@@ -47,7 +47,7 @@ class SenateScraper(BaseScraper):
         page = 1
 
         while True:
-            print(f" Fetching page {page}...")
+            print(f"Fetching page {page}...")
 
             payload = {
                 "_id": "61b3adc8124d7d000891ca5c",
@@ -63,11 +63,11 @@ class SenateScraper(BaseScraper):
                 response.raise_for_status()
                 data = response.json().get("allFiles", [])
             except Exception as e:
-                print(f" Failed on page {page}: {e}")
+                print(f"Failed on page {page}: {e}")
                 break
 
             if not data:
-                print(" All pages fetched.")
+                print("All pages fetched.")
                 break
 
             for item in data:
@@ -89,7 +89,7 @@ class SenateScraper(BaseScraper):
                     "upload_date": upload_date
                 })
             if page >= max_pages:
-                print(" Reached max page limit for test.")
+                print("Reached max page limit for test.")
                 break
             page += 1
 

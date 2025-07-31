@@ -4,9 +4,9 @@ from storage.file_manager import download_house_video_ffmpeg, download_senate_vi
 from storage.state_tracker import is_processed, mark_processed
 
 BUCKET_NAME = "legislature-videos-shaleen"
-def process_video(chamber, committee, recording_date, filename, download_args):
-    """Generic video processing: download, transcribe, upload, mark processed, cleanup"""
 
+def process_video(chamber, committee, recording_date, filename, download_args):
+    """Generic video processing: download, transcribe, store locally (no cloud)."""
     if is_processed(chamber, committee, recording_date, filename):
         print(f"[Skip] Already processed: {committee} | {recording_date} | {filename}")
         return
@@ -30,7 +30,7 @@ def process_video(chamber, committee, recording_date, filename, download_args):
     # Transcribe
     print(f"\n{chamber.capitalize()}: Transcribing...")
     transcriber = WhisperTranscriber()
-    transcript_path = transcriber.transcribe(local_path)
+    transcript_path = transcriber.transcribe_test(local_path)
 
     # Show transcript preview
     preview = Path(transcript_path).read_text()
@@ -54,3 +54,53 @@ def process_video(chamber, committee, recording_date, filename, download_args):
         print(f"[Cleanup] Deleted local files: {local_path.name}, {transcript_path.name}")
     except Exception as e:
         print(f"[Warning] Could not delete files: {e}")
+
+
+
+"""
+ ======================= No Cloud Upload Approach =======================
+ - Tried this approach to avoid using cloud storage but eventually reverted to cloud upload.
+ - Can discuss during interview about its pros/cons.
+
+
+def process_video(chamber, committee, recording_date, filename, download_args):
+    
+    output_dir = Path(f"downloads/{chamber}")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    if chamber == "senate":
+        if not filename.endswith(".mp4"):
+            filename += ".mp4"
+
+    local_path = output_dir / filename
+
+    # Skip if file already exists
+    if local_path.exists():
+        print(f"[Skip] Already downloaded: {local_path.name}")
+        return
+    
+    # Download based on chamber
+    if chamber == "house":
+        real_url = download_args["real_url"]
+        print(f"\nHouse: Downloading from {real_url}")
+        download_house_video_ffmpeg(real_url, local_path)
+    elif chamber == "senate":
+        video_id = download_args["video_id"]
+        print(f"\nSenate: Downloading video ID: {video_id}")
+        local_path = download_senate_video_ffmpeg(video_id, output_dir)
+
+    print(f"{chamber.capitalize()}: Download complete.")
+
+    # Transcribe
+    print(f"\n{chamber.capitalize()}: Transcribing...")
+    transcriber = WhisperTranscriber()
+    transcript_path = transcriber.transcribe(local_path)
+
+    # Show transcript preview
+    preview = Path(transcript_path).read_text()
+    print("\nTranscript Preview:\n")
+    print(preview[:1000] + "..." if len(preview) > 1000 else preview)
+    print(f"\n{chamber.capitalize()}: Transcription complete.")
+
+    print(f"[Done] {chamber.capitalize()} video processed locally.")
+
+"""

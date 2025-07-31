@@ -17,6 +17,11 @@ class WhisperTranscriber(Transcriber):
         self.model = WhisperModel(model_size, compute_type=compute_type)
 
     def transcribe(self, video_path: Path) -> str:
+        """
+        Transcribe the audio from a video file using faster_whisper.
+        Prints in segments with start and end times.
+        Returns the path to the transcript file.
+        """
         segments, _ = self.model.transcribe(str(video_path))
 
         transcript_path = video_path.with_suffix(".txt")
@@ -29,4 +34,14 @@ class WhisperTranscriber(Transcriber):
                 # Write in [start - end] format into file
                 f.write(f"[{start} - {end}] {text}\n")
 
+        return transcript_path
+
+    def transcribe_test(self, video_path: Path) -> str:
+        """ 
+        Test transcription method for testing purposes.
+        """
+        transcript_path = video_path.with_suffix(".txt")
+        with open(transcript_path, "w") as f:
+            f.write("This is a test transcription.\n")
+            f.write("It is not real data, just a placeholder.\n")
         return transcript_path

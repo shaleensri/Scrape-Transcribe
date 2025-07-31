@@ -22,15 +22,6 @@ class BaseScraper(ABC):
 
         return BeautifulSoup(response.text, "html.parser")
 
-    def parse_date(self, date_str: str) -> str:
-        # Try multiple formats as fallback
-        for fmt in ("%m/%d/%Y", "%Y-%m-%d"):
-            try:
-                return datetime.strptime(date_str, fmt).strftime("%Y-%m-%d")
-            except ValueError:
-                continue
-        return date_str  # fallback
-
     @abstractmethod
     def scrape(self) -> list:
         """Return a list of dicts with 'committee', 'date', and 'url'."""

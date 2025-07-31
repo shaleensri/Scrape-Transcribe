@@ -11,7 +11,6 @@ from storage.file_manager import (
 )
 from storage.video_processor import process_video
 from transcriber.whisper_transcriber import WhisperTranscriber
-from storage.state_tracker import is_processed, mark_processed
 
 BUCKET_NAME = "legislature-videos-shaleen"
 
@@ -55,8 +54,11 @@ def run_senate(limit=None):
     processed_count = 0
     for video in videos:  
         filename = video["title"]
+        if not filename.endswith(".mp4"):
+            filename += ".mp4"
         committee = filename.rsplit(" ", 1)[0].strip()
         recording_date = video["recording_date"]
+
         processed_count += 1
         process_video(
             chamber="senate",
@@ -71,9 +73,9 @@ def run_senate(limit=None):
 
 if __name__ == "__main__":
     # Choose which to run
-    #house_thread = threading.Thread(target=run_house, args=(4,))
-    senate_thread = threading.Thread(target=run_senate, args=(5,))
-    #house_thread.start()
+    house_thread = threading.Thread(target=run_house, args=(2,))
+    senate_thread = threading.Thread(target=run_senate, args=(2,))
+    house_thread.start()
     senate_thread.start()
-    #house_thread.join()
+    house_thread.join()
     senate_thread.join()

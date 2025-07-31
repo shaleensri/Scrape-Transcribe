@@ -1,0 +1,10 @@
+# Ignore downloaded video files
+downloads/
+*.mp4
+.venv
+
+# macOS system file
+.DS_Store
+
+# Python cache
+__pycache__/

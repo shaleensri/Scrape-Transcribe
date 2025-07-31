@@ -54,52 +54,68 @@ Access the GCP Bucket with all the files stored here via API: https://storage.go
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
-main.py # Runs House and Senate pipelines in parallel
-scheduler.py # Timed job runner with parallel pipelines
+main.py -  Runs House and Senate pipelines in parallel
 
-fetcher/
+scheduler.py - Timed job runner with parallel pipelines
+
+### fetcher/
 base_scraper.py
-house_scraper_static.py # House metadata scraper
-senate_scraper.py # Senate metadata scraper
 
-storage/
-file_manager.py # Download functions (House: direct MP4, Senate: HLS via ffmpeg)
-state_tracker.py # Processed state tracking (cloud mode)
-video_processor.py # process_video() pipeline
+house_scraper_static.py - House metadata scraper
 
-transcriber/
-whisper_transcriber.py # Whisper transcription wrapper
+senate_scraper.py - Senate metadata scraper
+
+### storage/
+file_manager.py -  Download functions (House: direct MP4, Senate: HLS via ffmpeg)
+
+state_tracker.py -  Processed state tracking (cloud mode)
+
+video_processor.py -  process_video() pipeline
+
+### transcriber/
+
+whisper_transcriber.py - Whisper transcription wrapper
 
 ---
 
 ## Installation
 
 ### 1. Clone the Repository
-
+```bash
 git clone https://github.com/shaleensri/Scrape-Transcribe.git
-
+```
 ### 2. Create a Virtual Environment
-
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
+```
 
 ### 3. Install Dependencies
-
+```bash
 pip install -r requirements.txt
-brew install ffmpeg
 
-### Usage
+brew install ffmpeg # mac
+```
 
-Run Once (Multi-threaded)
-python main.py - Runs both House and Senate pipelines in parallel for the given limit in main.py.
+## Usage
 
-Run with Scheduler (Also multi-threaded)
+#### Option 1. Run Once (Multi-threaded)
+```bash
+python main.py # Runs both House and Senate pipelines in parallel for the given limit in main.py. 
+```
+
+#### Option 2. Run with Scheduler (Also multi-threaded)
+```bash
 python scheduler.py
-
-Adjust in scheduler.py:
+```
+- Adjust in scheduler.py:
+```python
 FREQ_MINUTES = 5 # Frequency in minutes
-VIDEO_LIMIT = 2 # Videos per run
 
-**Developed by Shaleen Srivastava**
+VIDEO_LIMIT = 2 # Videos per run
+```
+
+
+***Developed by Shaleen Srivastava***

@@ -14,7 +14,7 @@ from transcriber.whisper_transcriber import WhisperTranscriber
 
 BUCKET_NAME = "legislature-videos-shaleen"
 SENATE_BATCH_SIZE = 30 # Tried larger, but received errors
-SENATE_MAX_PAGES = 2 # Limit for testing/ Demo
+SENATE_MAX_PAGES = 5 # Limit for testing/ Demo
 
 def get_filename_from_url(url):
     query = parse_qs(urlparse(url).query)
@@ -75,9 +75,9 @@ def run_senate(limit=None):
 
 if __name__ == "__main__":
     """ In case i dont want to run the scheduler, I can run this script directly."""
-    house_thread = threading.Thread(target=run_house, args=(2,))
-    senate_thread = threading.Thread(target=run_senate, args=(2,))
-    house_thread.start()
+    #house_thread = threading.Thread(target=run_house, args=(10,))
+    senate_thread = threading.Thread(target=run_senate, args=(10,))
+    #house_thread.start()
     senate_thread.start()
-    house_thread.join()
+    #house_thread.join()
     senate_thread.join()

@@ -107,11 +107,12 @@ def download_senate_video_ffmpeg(video_id: str, output_dir: Path) -> Path:
     @param output_dir: Directory to save the downloaded video.
     @return: Path to the downloaded video file.
     """
-
+    url = f"https://dlttx48mxf9m3.cloudfront.net/outputs/{video_id}/Default/HLS/"
     # Try both possible m3u8 paths
     patterns = [
-        f"https://dlttx48mxf9m3.cloudfront.net/outputs/{video_id}/Default/HLS/out1080p.m3u8",
-        f"https://dlttx48mxf9m3.cloudfront.net/outputs/{video_id}/Default/HLS/1080p.m3u8"
+        url + "out.m3u8",
+        url + "1080p.m3u8",
+        url + "out1080p.m3u8"
     ]
 
     m3u8_url = None
@@ -120,6 +121,7 @@ def download_senate_video_ffmpeg(video_id: str, output_dir: Path) -> Path:
             resp = requests.head(url, timeout=5)
             if resp.status_code == 200:
                 m3u8_url = url
+                print(f"[Senate] Found valid m3u8 URL: {m3u8_url}")
                 break
         except requests.RequestException:
             continue

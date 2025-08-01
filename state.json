@@ -1,26 +1,9 @@
 {
-  "house": [
-    {
-      "committee": "Agriculture",
-      "recording_date": "Thursday, February 20, 2025",
-      "filename": "HAGRI-022025.mp4"
-    },
-    {
-      "committee": "Agriculture",
-      "recording_date": "Thursday, March 6, 2025",
-      "filename": "HAGRI-030625.mp4"
-    }
-  ],
   "senate": [
     {
       "committee": "Senate Session",
-      "recording_date": "2025-07-29",
-      "filename": "Senate Session 25-07-29.mp4"
-    },
-    {
-      "committee": "Transportation and Infrastructure",
-      "recording_date": "2025-06-10",
-      "filename": "Transportation and Infrastructure 25-06-10.mp4"
+      "recording_date": "2025-07-31",
+      "filename": "Live Stream 3 - 2025-07-31T13:59:15.166Z.mp4"
     }
   ]
 }

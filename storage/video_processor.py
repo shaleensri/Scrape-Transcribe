@@ -38,7 +38,7 @@ def process_video(chamber, committee, recording_date, filename, download_args):
     # Transcribe
     print(f"\n{chamber.capitalize()}: transcribing...")
     transcriber = WhisperTranscriber()
-    transcript_path = transcriber.transcribe_test(local_path)
+    transcript_path = transcriber.transcribe(local_path)
     print(f"\n{chamber.capitalize()}: Transcript Done:\n")
 
     # Upload

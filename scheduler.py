@@ -5,8 +5,8 @@ from pathlib import Path
 from main import run_house, run_senate  
 
 # ===== CONFIGURATION =====
-FREQ_MINUTES = 5   # How often to run both jobs
-VIDEO_LIMIT = 2           # Max number of videos to process per run
+FREQ_MINUTES = 15   # How often to run both jobs
+VIDEO_LIMIT = 10           # Max number of videos to process per run
 LOCK_FILE = Path("scheduler.lock")
 # =========================
 

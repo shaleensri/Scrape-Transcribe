@@ -54,9 +54,7 @@ def is_processed(chamber: str, committee: str, recording_date: str, filename: st
     with STATE_LOCK:
         state = load_state()
         for entry in state.get(chamber, []):
-            if (entry["committee"] == committee and
-                entry["recording_date"] == recording_date and
-                entry["filename"] == filename):
+            if (entry["filename"] == filename):
                 return True
         return False
 
